@@ -120,65 +120,64 @@
     })(t0);
   }
 
-  // Shared press timer
+  // ------- Input -> DOT/DASH -> Redirect -------
   let pressStart = null;
+  let navigating = false; // prevent double fires
 
-  // Keyboard (space)
-  window.addEventListener("keydown", e => {
-    if (e.code === "Space" && pressStart === null) {
-      pressStart = Date.now();
-      e.preventDefault();
-    }
-  });
-  window.addEventListener("keyup", e => {
-    if (e.code === "Space" && pressStart !== null) {
-      const duration = Date.now() - pressStart;
-      pressStart = null;
-      handleSignal(duration);
-      e.preventDefault();
-    }
-  });
+  const THRESHOLD = 250;           // < 250ms = dot, >= 250ms = dash
+  const DOT_URL   = 'duel.html';
+  const DASH_URL  = 'learn.html';
 
-  // Touch (mobile tap/hold)
-  window.addEventListener("touchstart", e => {
-    if (pressStart === null) {
-      pressStart = Date.now();
-    }
-  });
-  window.addEventListener("touchend", e => {
-    if (pressStart !== null) {
-      const duration = Date.now() - pressStart;
-      pressStart = null;
-      handleSignal(duration);
-    }
-  });
-
-  // Mouse (left click/hold)
-  window.addEventListener("mousedown", e => {
-    if (e.button === 0 && pressStart === null) { // left button
-      pressStart = Date.now();
-    }
-  });
-  window.addEventListener("mouseup", e => {
-    if (e.button === 0 && pressStart !== null) {
-      const duration = Date.now() - pressStart;
-      pressStart = null;
-      handleSignal(duration);
-    }
-  });
-
-  // Unified signal handler
-  function handleSignal(duration) {
-    if (duration < 250) {
-      // dot
-      circle.classList.add("flash");
-      setTimeout(()=>circle.classList.remove("flash"), 200);
+  function handleSignal(duration){
+    if (navigating) return;
+    if (duration < THRESHOLD) {
+      circle.classList.add('flash');
+      setTimeout(()=>circle.classList.remove('flash'), 200);
+      navigating = true;
+      setTimeout(()=>location.href = DOT_URL, 500); // tiny delay for feedback
     } else {
-      // dash
-      rect.classList.add("flash");
-      setTimeout(()=>rect.classList.remove("flash"), duration);
+      rect.classList.add('flash');
+      setTimeout(()=>rect.classList.remove('flash'), Math.min(duration, 400));
+      navigating = true;
+      setTimeout(()=>location.href = DASH_URL, 500);
     }
   }
+
+  // Keyboard (Space)
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space' && pressStart === null) {
+      pressStart = Date.now();
+      e.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', e => {
+    if (e.code === 'Space' && pressStart !== null) {
+      const duration = Date.now() - pressStart; pressStart = null;
+      handleSignal(duration); e.preventDefault();
+    }
+  });
+
+  // Mouse (left)
+  window.addEventListener('mousedown', e => {
+    if (e.button === 0 && pressStart === null) pressStart = Date.now();
+  });
+  window.addEventListener('mouseup', e => {
+    if (e.button === 0 && pressStart !== null) {
+      const duration = Date.now() - pressStart; pressStart = null;
+      handleSignal(duration);
+    }
+  });
+
+  // Touch (mobile) — use passive:false so we can prevent scroll if needed
+  window.addEventListener('touchstart', e => {
+    if (pressStart === null) pressStart = Date.now();
+  }, {passive:true});
+  window.addEventListener('touchend', e => {
+    if (pressStart !== null) {
+      const duration = Date.now() - pressStart; pressStart = null;
+      handleSignal(duration);
+    }
+  });
 </script>
 
 </body>
