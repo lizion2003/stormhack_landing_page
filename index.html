@@ -86,7 +86,7 @@
 
 
 <div class="hint">
-  Press <strong>(Spacebar)</strong>: tap for DOT ·, hold for DASH –
+  Press <strong>(Enter)</strong>: tap for DOT ·, hold for DASH –
 </div>
 
 <script>
@@ -143,21 +143,22 @@
     }
   }
 
-  // Keyboard (Space)
+  // Keyboard (Enter)
+  // Use the Enter key to trigger DOT/DASH (tap/hold)
   window.addEventListener('keydown', e => {
-    if (e.code === 'Space' && pressStart === null) {
+    if (e.code === 'Enter' && pressStart === null) {
       pressStart = Date.now();
       e.preventDefault();
     }
   });
   window.addEventListener('keyup', e => {
-    if (e.code === 'Space' && pressStart !== null) {
+    if (e.code === 'Enter' && pressStart !== null) {
       const duration = Date.now() - pressStart; pressStart = null;
       handleSignal(duration); e.preventDefault();
     }
   });
 
-  // Mouse (left)
+  // Mouse (left) 
   window.addEventListener('mousedown', e => {
     if (e.button === 0 && pressStart === null) pressStart = Date.now();
   });
